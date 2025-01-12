@@ -1,21 +1,48 @@
 #include "Arduino.h"
-// #include "Wire.h"
-
-#include "MusicPlayer.h"
+#include "BleKeyboard.h"
+#include "string.h"
+#include "LiquidCrystal_I2C.h"
 
 #define DEVICE_NAME "Car Controller"
 #define DEBOUNCE_DELAY 50
 
-// TODO: Choose convenient pins if needed
+#define LCD_COLS 16
+#define LCD_ROWS 2
+#define LCD_ADDR 0x27
+
 #define LED_PIN 2
-#define PLAY_PAUSE_PIN 0
-#define NEXT_PIN 16
-#define PREV_PIN 17
+#define PLAY_PAUSE_PIN 14
+#define NEXT_PIN 15
+#define PREV_PIN 16
 #define SDA_PIN 21
 #define SCL_PIN 22
 
+typedef struct pin_states {
+	bool play_pause_pin;
+	bool next_pin;
+	bool prev_pin;
+	bool event_occured;
+} pin_states;
+
 unsigned long last_millis;
-MusicPlayer music_player(PLAY_PAUSE_PIN, NEXT_PIN, PREV_PIN, DEVICE_NAME, SDA_PIN, SCL_PIN);
+pin_states button_states = { false, false, false, false };
+LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLS, LCD_ROWS);
+BleKeyboard keyboard(DEVICE_NAME);
+
+void play_pause() { keyboard.write(KEY_MEDIA_PLAY_PAUSE); } 
+void next() { keyboard.write(KEY_MEDIA_NEXT_TRACK); }
+void prev() { keyboard.write(KEY_MEDIA_PREVIOUS_TRACK); }
+void reset_status() { button_states = { false, false, false, false }; }
+
+void read_pins() {
+    button_states.play_pause_pin = digitalRead(PLAY_PAUSE_PIN);
+	button_states.next_pin = digitalRead(NEXT_PIN);
+	button_states.prev_pin = digitalRead(PREV_PIN);
+	button_states.event_occured = 
+		button_states.play_pause_pin ||
+		button_states.next_pin ||
+		button_states.prev_pin;
+}
 
 void blink() {
 	digitalWrite(LED_PIN, !digitalRead(LED_PIN));
@@ -27,19 +54,29 @@ void setup() {
 
 	// Init GPIO
 	pinMode(LED_PIN, OUTPUT);
+	pinMode(PLAY_PAUSE_PIN, INPUT); 
+	pinMode(NEXT_PIN, INPUT);
+	pinMode(PREV_PIN, INPUT);
 
     // Initialize as Bluetooth HID controller
-	music_player.begin();
+	keyboard.begin();
     Serial.println("ESP32 Spotify Remote started!");
     Serial.println("Commands:");
     Serial.println("p - Play/Pause");
     Serial.println("n - Next Track");
     Serial.println("b - Previous Track");
+
+	// Init I2C Display
+	lcd.init();
+	lcd.backlight();
+	lcd.clear();
+	lcd.setCursor(0, 0);
+	lcd.print("Car Controller");
 }
 
 void loop() {
 	// Blink the LED when the device is not connected
-	if (!music_player.is_connected()) {
+	if (!keyboard.isConnected()) {
 		blink();
 		return;
 	} 
@@ -52,17 +89,17 @@ void loop() {
 
         switch (cmd) {
             case 'p':
-                music_player.play_pause();
+                play_pause();
                 Serial.println("Play/Pause");
                 break;
 
             case 'n':
-                music_player.next();
+                next();
                 Serial.println("Next track");
                 break;
 
             case 'b':
-                music_player.prev();
+                prev();
                 Serial.println("Previous track");
                 break;
             
@@ -78,26 +115,26 @@ void loop() {
 			return;
 		}
 
-		music_player.read_pins();
+		read_pins();
 
-		if (music_player.get_state().event_occured) {
-			if (music_player.get_state().play_pause_pin) {
-				music_player.play_pause();
+		if (button_states.event_occured) {
+			if (button_states.play_pause_pin) {
+				play_pause();
 				Serial.println("Play/Pause via button");
 			}
 			
-			if (music_player.get_state().next_pin) {
-				music_player.next();
+			if (button_states.next_pin) {
+				next();
 				Serial.println("Next track via button");
 			}
 			
-			if (music_player.get_state().prev_pin) {
-				music_player.prev();
+			if (button_states.prev_pin) {
+				prev();
 				Serial.println("Previous track via button");
 			}
 
 			last_millis = millis(); 
-			music_player.reset_status();
+			reset_status();
 		}
 	}
 
