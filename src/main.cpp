@@ -14,9 +14,9 @@
 #define LCD_ADDR 0x27
 
 #define LED_PIN 19 
-#define PLAY_PAUSE_PIN 14
-#define NEXT_PIN 15
-#define PREV_PIN 16
+#define PLAY_PAUSE_PIN 15
+#define NEXT_PIN 16
+#define PREV_PIN 14
 #define SDA_PIN 21
 #define SCL_PIN 22
 

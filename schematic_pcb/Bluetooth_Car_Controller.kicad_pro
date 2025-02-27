@@ -469,7 +469,7 @@
       "plot": "C:/Users/carlw/Desktop/gerbers/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../../../Desktop/Bluetooth_Car_Controller.step",
       "svg": "",
       "vrml": ""
     },

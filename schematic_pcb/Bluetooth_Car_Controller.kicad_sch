@@ -3762,6 +3762,16 @@
 		)
 		(uuid a8078198-9874-4818-aae9-10c0c5c868e1)
 	)
+	(text "Connected incorrectly, should be between switch + resistor"
+		(exclude_from_sim no)
+		(at 247.65 75.692 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "0a10f52b-ac91-4631-8553-923076d8a85c")
+	)
 	(text "SHOPPING: CAPs, LDO, HEADERS, MOUSE SWITCH\n"
 		(exclude_from_sim no)
 		(at 253.492 41.402 0)
@@ -3781,6 +3791,16 @@
 			)
 		)
 		(uuid "95e9eb6d-132f-4867-9c39-fb85f5e1fa71")
+	)
+	(text "EN pin should be connected to 3.3V with pull down resistor"
+		(exclude_from_sim no)
+		(at 73.152 69.088 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ca831f7d-af5f-41c0-aea6-f3b0c1e0ffde")
 	)
 	(text "UART Programming\n"
 		(exclude_from_sim no)
